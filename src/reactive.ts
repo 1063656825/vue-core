@@ -3,12 +3,12 @@
  * @Date: 2025-12-28 23:51:49
  * @Description: 文件功能描述
  * @FilePath: /reactivity/src/reactive.ts
- * @LastEditTime: 2026-01-10 14:08:45
+ * @LastEditTime: 2026-01-10 16:04:34
  * @LastEditors: yutaiqi
  */
 import { track, trigger } from "./effect";
 import { isObject } from "../shared/index";
-import { mutableHandlers, readonlyHandlers } from "./baseHnadlers";
+import { mutableHandlers, readonlyHandlers, shallowReactiveHandlers } from "./baseHnadlers";
 
 export const enum ReactiveFlags {
     IS_REACTIVE = '__v_isReactive',
@@ -24,7 +24,6 @@ export interface Target {
     [ReactiveFlags.SKIP]?: boolean;
 }
 
-export const targetMap = new WeakMap<Target, any>();
 
 // 为了区分普通代理reactive和readonly，我们分开进行存储
 export const readonlyMap = new WeakMap<Target, any>();
@@ -88,6 +87,10 @@ type DeepReadonly<T extends Record<string, any>> =
 
 export function readonly<T extends object>(target: T): DeepReadonly<T> {
     return createReactiveObject(target, true, readonlyHandlers)
+}
+
+export function shallowReactive<T extends object>(target: T): T {
+    return createReactiveObject(target, false, shallowReactiveHandlers)
 }
 
 export function toRaw<T>(observed: T): T {

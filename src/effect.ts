@@ -3,14 +3,14 @@
  * @Date: 2025-12-28 23:51:40
  * @Description: 文件功能描述
  * @FilePath: /reactivity/src/effect.ts
- * @LastEditTime: 2026-01-06 23:31:44
+ * @LastEditTime: 2026-01-10 16:11:12
  * @LastEditors: yutaiqi
  */
 
 
 import { TrackOperationTypes, TriggerOperationTypes } from "./operations";
 
-let shouldTrack = false;
+let shouldTrack = true;
 export function enableTracking() {
     shouldTrack = true;
 }
@@ -24,8 +24,8 @@ export function disableTracking() {
  * @param {unknown} key 属性名
  * @return {*}
  */
-export function track(target: object, type:TrackOperationTypes, key: unknown) {
-if(!shouldTrack) return;
+export function track(target: object, type: TrackOperationTypes, key: unknown) {
+    if (!shouldTrack) return;
     console.log(`依赖收集track: [${type}] ${String(key)}属性被读取`);
 }
 
@@ -37,6 +37,6 @@ if(!shouldTrack) return;
  * @param {unknown} key 属性名
  * @return {*}
  */
-export function trigger(target: object, type:TriggerOperationTypes, key: unknown) {
+export function trigger(target: object, type: TriggerOperationTypes, key: unknown) {
     console.log(`依赖收集trigger: [${type}] ${String(key)}属性被设置`);
 }

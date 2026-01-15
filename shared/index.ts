@@ -3,7 +3,7 @@
  * @Date: 2025-12-29 23:18:33
  * @Description: 文件功能描述
  * @FilePath: /reactivity/shared/index.ts
- * @LastEditTime: 2026-01-02 16:50:30
+ * @LastEditTime: 2026-01-10 16:00:57
  * @LastEditors: yutaiqi
  */
 export const isObject = (val: unknown): val is Record<any,any> => {
@@ -37,3 +37,9 @@ export const isPromise = (val: unknown): val is Promise<any> => {
 export const isEqual = (val1: unknown, val2: unknown): boolean => {
     return Object.is(val1, val2);
 }
+
+export const isSymbol = (val: unknown): val is symbol => {
+    return typeof val === 'symbol';
+}
+
+export const extend = Object.assign

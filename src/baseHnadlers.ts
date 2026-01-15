@@ -3,13 +3,13 @@
  * @Date: 2025-12-30 22:22:08
  * @Description: 文件功能描述
  * @FilePath: /reactivity/src/baseHnadlers.ts
- * @LastEditTime: 2026-01-10 13:56:58
+ * @LastEditTime: 2026-01-10 16:11:17
  * @LastEditors: yutaiqi
  */
 
 import { track, trigger, enableTracking, disableTracking } from "./effect";
-import { isObject, isEqual, isArray } from "../shared/index";
-import { ReactiveFlags, reactive, targetMap, toRaw } from "./reactive";
+import { isObject, isEqual, isArray, isSymbol, extend } from "../shared/index";
+import { ReactiveFlags, reactive, reactiveMap, readonlyMap, toRaw, readonly } from "./reactive";
 import { TrackOperationTypes, TriggerOperationTypes } from "./operations";
 
 export const ITERATE_KEY = Symbol('iterate');
@@ -51,9 +51,82 @@ const arrayInstrumentations: Record<string, Function> = {};
     }
 })
 
+const buildInSymbols = new Set(Object.getOwnPropertyNames(Symbol)
+.map(key => (Symbol as any)[key])
+.filter(isSymbol))
+
 function createGetter(isReadonly = false, isShallow = false){
     return function get(target: object, key: string | symbol, receiver: object){
+        const targetMap = key === ReactiveFlags.RAW ? reactiveMap : readonlyMap;
+        if (key === ReactiveFlags.IS_REACTIVE) {
+            return true;
+        } else if (key === ReactiveFlags.IS_READONLY){
+            return isReadonly;
+        } else if (key === ReactiveFlags.RAW && receiver === targetMap.get(target)) {
+            // 判断代理对象访问 __v_raw 属性，直接返回目标对象
+            // 还需要判断是否为代理对象发起的
+            return target;
+        }
+    
+        const targetIsArray = isArray(target);
+        if (targetIsArray && arrayInstrumentations.hasOwnProperty(key)) {
+            return Reflect.get(arrayInstrumentations, key, target);
+        }
 
+        const reactiveResult = Reflect.get(target, key, receiver);
+        
+        // 收集依赖之前先判断是否为调用私有属性
+        const keyIsSymbol = isSymbol(key);
+        if(keyIsSymbol ? buildInSymbols.has(key) : key === '__proto__'){
+            return reactiveResult
+        }
+
+        // 只有非只读的情况才进行依赖收集
+        if(!isReadonly){
+            track(target, TrackOperationTypes.GET, key);
+        }
+
+        // shallow的作用是对对象属性进行浅层代理，即只代理对象属性的属性，而不是对象属性的属性的属性
+        if(isShallow){
+            return reactiveResult;
+        }
+       
+        // 如果是对象，再次进行递归代理
+        if (isObject(reactiveResult)) {
+            return isReadonly ? readonly(reactiveResult) : reactive(reactiveResult);
+        }
+        return reactiveResult;
+    }
+}
+
+function createSetter(isShallow = false){
+    return function set(target: Record<string | symbol, unknown>, key: string | symbol, value: unknown, receiver: object) {
+        // 这里需要添加判断，如果为新值则使用 add，如果为旧值则使用 set，如果已经存在应该直接跳过
+        const hasKey = target.hasOwnProperty(key);
+        const type = target.hasOwnProperty(key) ? TriggerOperationTypes.SET : TriggerOperationTypes.ADD;
+    
+        const oldValue = target[key];
+    
+        const oldLength = isArray(target) ? target.length : 0
+    
+        const result = Reflect.set(target, key, value, receiver);
+        if (!result) {
+            return result
+        }
+        const newLength = isArray(target) ? target.length : 0
+        if (!isEqual(value, oldValue) || type === TriggerOperationTypes.ADD) {
+            trigger(target, type, key)
+            if (isArray(target) && oldLength !== newLength) {
+                if (key !== 'length') {
+                    trigger(target, TriggerOperationTypes.SET, 'length')
+                } else {
+                    for (let i = newLength; i < oldLength; i++) {
+                        trigger(target, TriggerOperationTypes.DELETE, i + '');
+                    }
+                }
+            }
+        }
+        return result
     }
 }
 
@@ -62,57 +135,9 @@ const readonlyGet = createGetter(true);
 const shallowGet = createGetter(false, true);
 const shallowReadonlyGet = createGetter(true, true);
 
+const set = createSetter();
+const shallowSet = createSetter(true);
 
-// function get(target: object, key: string | symbol, receiver: object) {
-//     if (key === ReactiveFlags.IS_REACTIVE) {
-//         return true;
-//     } else if (key === ReactiveFlags.RAW && receiver === targetMap.get(target)) {
-//         // 判断代理对象访问 __v_raw 属性，直接返回目标对象
-//         // 还需要判断是否为代理对象发起的
-//         return target;
-//     }
-
-//     const targetIsArray = isArray(target);
-//     if (targetIsArray && arrayInstrumentations.hasOwnProperty(key)) {
-//         return Reflect.get(arrayInstrumentations, key, target);
-//     }
-
-//     const reactiveResult = Reflect.get(target, key, receiver);
-//     // 如果是对象，再次进行递归代理
-//     if (isObject(reactiveResult)) {
-//         return reactive(reactiveResult);
-//     }
-//     return reactiveResult;
-// }
-
-function set(target: Record<string | symbol, unknown>, key: string | symbol, value: unknown, receiver: object) {
-    // 这里需要添加判断，如果为新值则使用 add，如果为旧值则使用 set，如果已经存在应该直接跳过
-    const hasKey = target.hasOwnProperty(key);
-    const type = target.hasOwnProperty(key) ? TriggerOperationTypes.SET : TriggerOperationTypes.ADD;
-
-    const oldValue = target[key];
-
-    const oldLength = isArray(target) ? target.length : 0
-
-    const result = Reflect.set(target, key, value, receiver);
-    if (!result) {
-        return result
-    }
-    const newLength = isArray(target) ? target.length : 0
-    if (!isEqual(value, oldValue) || type === TriggerOperationTypes.ADD) {
-        trigger(target, type, key)
-        if (isArray(target) && oldLength !== newLength) {
-            if (key !== 'length') {
-                trigger(target, TriggerOperationTypes.SET, 'length')
-            } else {
-                for (let i = newLength; i < oldLength; i++) {
-                    trigger(target, TriggerOperationTypes.DELETE, i + '');
-                }
-            }
-        }
-    }
-    return result
-}
 
 function has(target: object, key: string | symbol) {
     // 收集依赖
@@ -157,3 +182,12 @@ export const readonlyHandlers: ProxyHandler<object> = {
     }
 
 }
+
+export const shallowReactiveHandlers: ProxyHandler<object> = extend(
+    {},
+    mutableHandlers,
+    {
+      get: shallowGet,
+      set: shallowSet
+    }
+  )

@@ -226,7 +226,7 @@ const obj = {
 // }
 // fn();
 
-import { reactive } from "./reactive";
+// import { reactive } from "./reactive";
 
 // 数组长度隐式更新的问题
 // const arr1 = [1, 2, , 4, 5, 6];
@@ -261,14 +261,102 @@ import { reactive } from "./reactive";
 
 
 // push pop shift unshift splice
-const arr1 = [1, 2, 3];
-const state1 = reactive(arr1);
+// const arr1 = [1, 2, 3];
+// const state1 = reactive(arr1);
 
-function fn() { 
-  state1.push(4);
-//   state1.pop();
-//   state1.shift();
-//   state1.unshift(4);
-//   state1.splice(1, 1);
+// function fn() { 
+//   state1.push(4);
+// //   state1.pop();
+// //   state1.shift();
+// //   state1.unshift(4);
+// //   state1.splice(1, 1);
+// }
+// fn();
+
+// readonly 处理
+// import { readonly } from "./reactive";
+
+// const obj = {
+//   a: 1,
+//   b: 2,
+//   c: {
+//     d: 3,
+//   },
+// };
+
+// const readonlyProxy = readonly(obj);
+// readonlyProxy.a;
+
+// //@ts-ignore
+// readonlyProxy.a = 2;
+// console.log(readonlyProxy.a);
+
+// //@ts-ignore
+// readonlyProxy.c.d = 22;
+// console.log(readonlyProxy.c.d);
+
+
+
+// 一些对象标准行为(特殊情况)需要进行排除
+// import { reactive } from "./reactive";
+
+// const obj = {
+//   a: 1,
+//   b: 2,
+//   c: {
+//     d: 3,
+//   },
+//   [Symbol.toStringTag]: 'MyObject',
+//   items: [1, 2, 3],
+//   [Symbol.iterator]: function() {
+//     let index = 0
+//     const items = this.items;
+//     return {
+//       next: function() {
+//         return index < items.length
+//           ? { value: items[index++], done: false }
+//           : { value: undefined, done: true }
+//       }
+//     }
+//   }
+// };
+
+// console.log(obj.toString())  //[object Object]
+
+// for (const item of obj) { 
+//   console.log(item);
+// }
+
+// const state1 = reactive(obj);
+
+// console.log((state1 as any).__proto__)
+// console.log(state1.toString());
+
+// for (const item of state1) { 
+//   console.log(item);
+// }
+
+
+// shallowReactive 浅层代理
+import { reactive, shallowReactive } from "./reactive";
+
+const obj1 = {
+  a: 1,
+  b: 2,
+  c: {
+    d: 3,
+  }
 }
-fn();
+
+const obj2 = {
+  a: 1,
+  b: 2,
+  c: {
+    d: 3,
+  }
+}
+
+const state1 = reactive(obj1);
+console.log(state1.c)
+const state2 = shallowReactive(obj2);
+console.log(state2.c)
