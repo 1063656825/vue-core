@@ -1,12 +1,11 @@
-export const enum TrackOperationTypes {
+export const enum TrackOpTypes {
     GET = 'GET',
     HAS = 'HAS',
-    ITERATE = 'ITERATE',
+    ITERATE = 'ITERATE'
 }
 
-export const enum TriggerOperationTypes {
+export const enum TriggerOpTypes {
     SET = 'SET',
     ADD = 'ADD',
-    HAS = 'HAS',
-    DELETE = 'DELETE',
+    DELETE = 'DELETE'
 }

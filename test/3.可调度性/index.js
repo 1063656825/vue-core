@@ -73,8 +73,8 @@ function trigger(target, key) {
         })
 
     effectsToRun.forEach((effect) => {
-        if (effect.options.schedular) {
-            effect.options.schedular(effect);
+        if (effect.options.scheduler) {
+            effect.options.scheduler(effect);
         } else {
             effect()
         }
@@ -201,7 +201,7 @@ effect(() => {
     console.log(proxy.age);
 
 }, {
-    schedular: (effectFn) => {
+    scheduler: (effectFn) => {
         // effectFn();
         jobQueue.add(effectFn)
         flushJob()

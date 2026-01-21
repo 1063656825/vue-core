@@ -1,12 +1,12 @@
+
 const layer1 = document.querySelector("#layer1");
 const layer2 = document.querySelector("#layer2");
 const btn1 = document.querySelector("#btn1");
 const btn2 = document.querySelector("#btn2");
 
 const obj = {
-    flag: true,
-    name: "张三",
-    age: 18,
+    firstName: "why",
+    lastName: "kobe",
 };
 
 const buckets = new WeakMap(); // 存储依赖
@@ -143,7 +143,7 @@ function effect(fn, options) {
     effectFn();
 }
 
-function cleanup(effect) {
+function cleanup(effect) { 
     const { deps } = effect;
     if (deps.length) {
         for (let i = 0; i < deps.length; i++) {
@@ -176,37 +176,109 @@ function flushJob() {
     })
 }
 
-function computed(getter) {
-    let value;
-    let dirty  = true
-    const effectFn = effect(getter, {
-        lazy: true,
-        scheduler:()=>{
-            dirty = true
-            trigger(obj, 'value')
-        }
-    })
+// function computed(getter) {
+//     let value;
+//     let dirty  = true
+//     const effectFn = effect(getter, {
+//         lazy: true,
+//         scheduler:()=>{
+//             dirty = true
+//             trigger(obj, 'value')
+//         }
+//     })
 
-    const obj = {
-        get value() {
-            if(dirty){
-                console.log("计算属性get");
-                value = effectFn();
-                dirty = false
-            }
-            track(obj, 'value')
-            return value
-        }
+//     const obj = {
+//         get value() {
+//             if(dirty){
+//                 console.log("计算属性get");
+//                 value = effectFn();
+//                 dirty = false
+//             }
+//             track(obj, 'value')
+//             return value
+//         }
+//     }
+//     return obj
+// }
+
+const NOOP = () => {};
+const isFunction = (val) => {
+    return typeof val === 'function';
+}
+function computed(getterOrOptions){
+    const isFn = isFunction(getterOrOptions)
+    let getter;
+    let setter;
+    if(isFn){
+        getter = getterOrOptions
+        setter = NOOP
+    } else {
+        getter = getterOrOptions.get    
+        setter = getterOrOptions.set
+        isFunction(setter) || (setter = NOOP)
+        isFunction(getter) || (getter = NOOP)
     }
-    return obj
+
+    return new ComputedRefImpl(getter, setter)
 }
 
-const res = computed(()=> proxy.age + 20)
+class ComputedRefImpl {
+    _value;
+    _dirty = true;
+    effect;
+    _setter;
+    constructor(getter, _setter){
+        this._setter = _setter
+        this.effect = effect(getter, {
+            lazy: true,
+            scheduler: () => {
+                if (!this._dirty) {
+                    this._dirty = true
+                    trigger(this, 'value')
+                }
+            }
+        })
+    }
 
-effect(()=>{
-    console.log(res.value);
+    get value() {
+        if (this._dirty) {
+            this._value = this.effect()
+            this._dirty = false
+        }
+        track(this, 'value')
+        return this._value
+    }
+
+    set value(newValue) {
+        this._setter(newValue)
+    }
+
+}
+
+const res = computed({
+    get() { 
+      return proxy.firstName + proxy.lastName;
+    },
+    set(val) { 
+      const names = val.split("");
+      proxy.firstName = names[0];
+      proxy.lastName = names[1];
+    }
+  })
+
+effect(() => { 
     layer1.innerHTML = res.value;
-})
-
-proxy.age++
-console.log(res.value);
+    layer2.innerHTML = proxy.firstName + "---" + proxy.lastName;
+  })
+  
+  btn1.addEventListener("click", () => { 
+    proxy.firstName = "李";
+    proxy.lastName = "四";
+  })
+  
+  btn2.addEventListener("click", () => { 
+    res.value = "王五";
+  })
+  
+  
+  
