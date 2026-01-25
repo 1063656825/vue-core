@@ -3,13 +3,14 @@
  * @Date: 2025-12-28 21:54:14
  * @Description: 文件功能描述
  * @FilePath: /reactivity/src/computed.ts
- * @LastEditTime: 2026-01-21 23:13:33
+ * @LastEditTime: 2026-01-24 22:11:55
  * @LastEditors: yutaiqi
  */
 import { ReactiveEffect, effect,trigger,track } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
 import { ReactiveFlags, toRaw } from './reactive';
 import { isFunction, NOOP } from '../shared/index'
+import { Ref } from './ref'
 
 export type ComputedGetter<T> = (ctx?: any) => T;
 export type ComputedSetter<T> = (v: T) => void;
@@ -17,10 +18,6 @@ export type ComputedSetter<T> = (v: T) => void;
 export interface WriteableComputedOptions<T> { 
   get: ComputedGetter<T>;
   set: ComputedSetter<T>;
-}
-
-export interface Ref<T = any> { 
-  value: T;
 }
 
 export interface WriteableComputedRef<T> extends Ref<T> { 

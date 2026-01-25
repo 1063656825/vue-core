@@ -338,25 +338,29 @@ const obj = {
 
 
 // shallowReactive 浅层代理
-import { reactive, shallowReactive } from "./reactive";
+// import { reactive, shallowReactive } from "./reactive";
 
-const obj1 = {
-  a: 1,
-  b: 2,
-  c: {
-    d: 3,
-  }
-}
+// const obj1 = {
+//   a: 1,
+//   b: 2,
+//   c: {
+//     d: 3,
+//   }
+// }
 
-const obj2 = {
-  a: 1,
-  b: 2,
-  c: {
-    d: 3,
-  }
-}
+// const obj2 = {
+//   a: 1,
+//   b: 2,
+//   c: {
+//     d: 3,
+//   }
+// }
 
-const state1 = reactive(obj1);
-console.log(state1.c)
-const state2 = shallowReactive(obj2);
-console.log(state2.c)
+// const state1 = reactive(obj1);
+// console.log(state1.c)
+// const state2 = shallowReactive(obj2);
+// console.log(state2.c)
+
+export { reactive } from "./reactive";
+export { trigger } from "./effect";
+export { ref } from "./ref";

@@ -3,7 +3,7 @@
  * @Date: 2025-12-28 23:51:49
  * @Description: 文件功能描述
  * @FilePath: /reactivity/src/reactive.ts
- * @LastEditTime: 2026-01-21 23:10:41
+ * @LastEditTime: 2026-01-24 17:46:58
  * @LastEditors: yutaiqi
  */
 import { isObject } from "../shared/index";
@@ -94,3 +94,14 @@ export function toRaw<T>(observed: T): T {
 export function shallowReactive<T extends object>(target: T): T {
     return createReactiveObject(target, false, shallowReactiveHandlers);
 }
+
+export function isReactive(value: any): boolean {
+    if(isReadonly(value)){
+        return isReactive(value[ReactiveFlags.RAW]);
+    }
+    return !!(value && value[ReactiveFlags.IS_REACTIVE]);
+}
+
+export function isReadonly(value: any): boolean {
+    return !!(value && value[ReactiveFlags.IS_READONLY]);
+}   
