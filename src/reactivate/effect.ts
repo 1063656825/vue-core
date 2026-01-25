@@ -1,5 +1,5 @@
 import { TrackOpTypes, TriggerOpTypes } from "./operations";
-import { isArray, isIntegerKey } from "../shared/index";
+import { isArray, isIntegerKey } from "../../shared/index";
 
 export interface ReactiveEffect<T = any> {
     (): T;

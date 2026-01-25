@@ -1,5 +1,5 @@
 import { trigger, track, pauseTracking, enableTracking } from './effect';
-import { isObject, hasChanged, isArray, isSymbol, extend, isIntegerKey, hasOwn } from '../shared/index';
+import { isObject, hasChanged, isArray, isSymbol, extend, isIntegerKey, hasOwn } from '../../shared/index';
 import { ReactiveFlags, reactive, reactiveMap, readonlyMap, toRaw,readonly } from './reactive';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
 

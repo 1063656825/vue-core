@@ -9,7 +9,7 @@
 import { ReactiveEffect, effect,trigger,track } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
 import { ReactiveFlags, toRaw } from './reactive';
-import { isFunction, NOOP } from '../shared/index'
+import { isFunction, NOOP } from '../../shared/index'
 import { Ref } from './ref'
 
 export type ComputedGetter<T> = (ctx?: any) => T;

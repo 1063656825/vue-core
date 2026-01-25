@@ -1,6 +1,6 @@
 
 import { effect } from "./effect";
-import { isArray, isObject, isFunction } from "../shared/index";
+import { isArray, isObject, isFunction } from "../../shared/index";
 import { isRef, Ref } from "./ref";
 
 interface WatchOptions {

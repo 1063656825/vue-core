@@ -6,7 +6,7 @@
  * @LastEditTime: 2026-01-24 17:46:58
  * @LastEditors: yutaiqi
  */
-import { isObject } from "../shared/index";
+import { isObject } from "../../shared/index";
 import { mutableHandlers, readonlyHandlers, shallowReactiveHandlers } from "./baseHandlers";
 
 export const enum ReactiveFlags {

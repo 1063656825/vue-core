@@ -1,4 +1,4 @@
-import { hasChanged, isArray, isObject } from "../shared/index";
+import { hasChanged, isArray, isObject } from "../../shared/index";
 import { reactive, toRaw } from "./reactive";
 import { track, trigger } from "./effect";
 import { TrackOpTypes, TriggerOpTypes } from "./operations";
