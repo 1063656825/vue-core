@@ -1,0 +1,86 @@
+<!--
+ * @Author: yutaiqi
+ * @Date: 2026-01-25 21:43:31
+ * @Description: 文件功能描述
+ * @FilePath: /reactivity/test/2-1.渲染器的基本设计/1.渲染器的雏形/index.html
+ * @LastEditTime: 2026-01-25 21:57:13
+ * @LastEditors: yutaiqi
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const vnode = {
+        type: 'div',
+        props: {
+            id: 'layer1',
+            style: {
+                color: 'red'
+            },
+            onclick: () => {
+                console.log('click')
+            }
+        },
+        children: [
+            {
+                type: 'p',
+                props: {
+                    id: 'name',
+                    style: {
+                        color: 'blue'
+                    }
+                },
+                children: 'name'
+            },
+            {
+                type: 'p',
+                props: {
+                    id: 'age',
+                    style: {
+                        color: 'green'
+                    }
+                },
+            }
+        ]
+    }
+
+    const render = (vnode, container) => {
+        // 创建元素
+        const el = document.createElement(vnode.type)
+        // 遍历属性，针对不同的属性，进行处理
+        for (const key in vnode.props) {
+            if (key === 'style') {
+                for (const styleName in vnode.props.style) {
+                    el.style[styleName] = vnode.props.style[styleName]
+                }
+            } else if (key.startsWith('on')) {
+                el.addEventListener(key.slice(2).toLowerCase(), vnode.props[key])
+            } else {
+                el.setAttribute(key, vnode.props[key])
+            }
+        }
+        // 遍历子节点，针对不同的子节点，进行处理
+        if (typeof vnode.children === 'string') {
+            el.appendChild(document.createTextNode(vnode.children))
+        } else if (Array.isArray(vnode.children)) {
+            for (const element of vnode.children) {
+                const children = document.createElement(element.type)
+                el.appendChild(children)
+                render(element, children)
+            }
+        }
+        container.appendChild(el)
+    }
+    render(vnode, document.getElementById('app'))
+</script>
+
+</html>

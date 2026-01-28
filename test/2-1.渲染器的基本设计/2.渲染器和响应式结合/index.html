@@ -1,0 +1,39 @@
+<!--
+ * @Author: yutaiqi
+ * @Date: 2026-01-25 21:59:56
+ * @Description: 文件功能描述
+ * @FilePath: /reactivity/test/2-1.渲染器的基本设计/2.渲染器和响应式结合/index.html
+ * @LastEditTime: 2026-01-25 22:25:30
+ * @LastEditors: yutaiqi
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <button class="btn1">增加</button>
+</body>
+<script src="./index.global.js"></script>
+<script>
+    const { effect, ref } = VueReactivity
+    const ref1 = ref(1)
+    const render = (vnode, container) => { 
+        container.innerHTML = vnode
+    }
+    effect(() => {
+        render(`<h1>${ref1.value}</h1>`, document.getElementById('app'))
+    })
+    const btn1 = document.querySelector('.btn1')
+    btn1.addEventListener('click', () => {
+        ref1.value++
+    })
+</script>
+
+</html>

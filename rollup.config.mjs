@@ -3,7 +3,7 @@
  * @Date: 2025-12-29 00:05:50
  * @Description: 文件功能描述
  * @FilePath: /reactivity/rollup.config.mjs
- * @LastEditTime: 2025-12-29 23:54:52
+ * @LastEditTime: 2026-01-25 22:01:04
  * @LastEditors: yutaiqi
  */
 import json from "@rollup/plugin-json";
@@ -15,10 +15,17 @@ import htmlTemplate from "rollup-plugin-generate-html-template";
 
 export default {
   input: "src/index.ts",
-  output: {
-    file: "dist/index.js",
-    format: "esm",
-  },
+  output: [
+    {
+        file: "dist/index.js",
+        format: "esm",
+      },
+      {
+        file: "dist/index.global.js",
+        format: "umd",
+        name: "VueReactivity"
+      }
+  ],
   treeshake: false, // 禁用摇树优化
   onwarn: (msg, warn) => {
     // 循环依赖警告 不提示
